@@ -9,7 +9,7 @@ import threading
 import queue
 
 
-class process_swarm():
+class process_star():
     ROBOT_LIBRARY_SCOPE = "TEST"
     _start_cnt = itertools.count()
     _address = None
@@ -21,8 +21,8 @@ class process_swarm():
     def Start_Process(self) -> None:
         q = queue.Queue()
         if self._target_suite is None:
-            logger.error(process_swarm._address)
-            threading.Thread(target=lambda q: q.put(multiprocessing.connection.Client(process_swarm._address)), args=(q,)).start()
+            logger.error(process_star._address)
+            threading.Thread(target=lambda q: q.put(multiprocessing.connection.Client(process_star._address)), args=(q,)).start()
             try:
                 self._fifo = q.get(timeout=2)
             except queue.Empty:
@@ -34,9 +34,9 @@ class process_swarm():
             Path(f"{self.out_dir}").mkdir(parents=True, exist_ok=True)
             self._stdout = open(f"{self.out_dir}/output.log", "w")
             cmd =  f"""
-import robotframework_concurrent.process_swarm
+import robotframework_concurrent.process_star
 import robot
-robotframework_concurrent.process_swarm.process_swarm._address = "{fifo.address}"
+robotframework_concurrent.process_star.process_star._address = "{fifo.address}"
 robot.run("{self._target_suite}", outputdir='{self.out_dir}')
 """
             self._sp = subprocess.Popen([sys.executable, "-c", cmd], stdout=self._stdout, stderr=subprocess.STDOUT)
@@ -73,6 +73,6 @@ robot.run("{self._target_suite}", outputdir='{self.out_dir}')
             try:
                 self._sp.wait(timeout=1)
             except subprocess.TimeoutExpired:
-                logger.error(f"Process swarm was not terminated properly (suite: {self._target_suite}, output: {self._out_dir}), killing it.")
+                logger.error(f"Process star was not terminated properly (suite: {self._target_suite}, output: {self._out_dir}), killing it.")
                 self._sp.kill()
                 self._sp.wait(timeout=2)

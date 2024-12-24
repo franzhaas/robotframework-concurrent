@@ -1,5 +1,5 @@
 *** Settings ***
-Library                 robotframework_concurrent.process_swarm
+Library                 robotframework_concurrent.process_star
 Test Setup              Test setup keyword
 *** Test Cases ***
 basic

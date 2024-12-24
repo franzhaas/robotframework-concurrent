@@ -1,7 +1,5 @@
-from dataclasses import dataclass
 import robot.api.logger as logger
 from queue import Queue
-from robot.libraries.BuiltIn import BuiltIn
 from robot.api.deco import not_keyword
 import threading
 from enum import Enum as Enum
@@ -10,10 +8,11 @@ import os
 import threading
 
 
-
-_concurrentEvent = Enum("concurrentEvent", ["START", "END", "CALL", "EXCEPTION"])
-
-
+class _concurrentEvent(Enum):
+    START = 1
+    END = 2
+    CALL = 3
+    EXCEPTION = 4
 
 @not_keyword
 def make_function_async(fun):
@@ -92,4 +91,3 @@ class async_keyword_execution_base:
                 case (_concurrentEvent.CALL, fun, q, args, kwargs):
                     q.put(fun(*args, **kwargs))
             self._2original_thread_queue.task_done()
-

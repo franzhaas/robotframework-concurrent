@@ -11,6 +11,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipython>=8.31.0",
+    "radon>=6.0.1",
+    "ruff>=0.8.4",
 ]
 
 [tool.hatch.version]

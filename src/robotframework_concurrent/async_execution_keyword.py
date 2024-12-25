@@ -5,14 +5,17 @@ import threading
 from enum import Enum as Enum
 from concurrent.futures import ThreadPoolExecutor
 import os
-import threading
-
+import robot.libraries.BuiltIn as BuiltIn
 
 class _concurrentEvent(Enum):
     START = 1
     END = 2
     CALL = 3
     EXCEPTION = 4
+
+
+def _run_keyword(keyword, *args, **kwargs):
+    return BuiltIn.BuiltIn().run_keyword(keyword, *args)
 
 @not_keyword
 def make_function_async(fun):
@@ -67,7 +70,17 @@ class async_keyword_execution_base:
             _q = Queue()
             self._2original_thread_queue.put((_concurrentEvent.CALL, fun, _q,   args, kwargs,))
             return _q.get()
-    
+        
+    @not_keyword
+    def run_keyword_async(self, keyword, *args, **kwargs):
+        """
+        This function is used to run a keyword from the originating thread.
+        """
+        if threading.current_thread() == threading.main_thread():
+            return _run_keyword(*args, **kwargs)
+        else:
+            self._2original_thread_queue.put((_concurrentEvent.CALL, _run_keyword, None, (keyword, *args,), kwargs,))
+            
     def wait_for_async_execution_completion(self ):
         """
         This function is used to wait for the completion of all asynchronous executions

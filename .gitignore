@@ -1,0 +1,7 @@
+**/*.pyc
+.python-version
+**/log.html
+**/report.html
+**/output.xml
+**/output.log
+

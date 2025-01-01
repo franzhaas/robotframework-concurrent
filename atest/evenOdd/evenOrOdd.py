@@ -1,5 +1,5 @@
 from robot.api import logger
-from robotframework_concurrent import async_execution_keyword
+from robotframework_concurrent import concurrent_keyword
 import time
 
 
@@ -18,11 +18,11 @@ def _is_odd(nr: int):
     return _is_even(nr-1)
 
 
-class evenOrOdd(async_execution_keyword.async_keyword_execution_base):
+class evenOrOdd(concurrent_keyword.concurrent_keyword_execution_base):
     def __init__(self):
         super().__init__()
 
-    @async_execution_keyword.make_function_async
+    @concurrent_keyword.make_function_concurrent
     def odd(self, nr: int):
         rVal = _is_odd(int(nr))
         self.call_function_from_originating_thread(logger.warn, f"{nr} odd is {rVal}")

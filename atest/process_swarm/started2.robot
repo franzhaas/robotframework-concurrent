@@ -1,6 +1,7 @@
 *** Settings ***
 Library                  robotframework_concurrent.process_star
 Test Setup              Test setup keyword
+Force Tags              swarm
 *** Test Cases ***
 basic
     send_message        sleepi sleepi

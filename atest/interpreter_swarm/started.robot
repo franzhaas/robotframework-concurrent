@@ -1,5 +1,5 @@
 *** Settings ***
-Library                 robotframework_concurrent.process_star
+Library                 robotframework_concurrent.interpreter_star
 Test Setup              Test setup keyword
 Force Tags              swarm
 *** Test Cases ***
@@ -10,4 +10,4 @@ basic
 
 *** Keywords ***
 Test setup keyword
-    Start_Process
+    Start_interpreter

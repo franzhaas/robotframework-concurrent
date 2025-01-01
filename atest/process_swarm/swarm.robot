@@ -1,6 +1,6 @@
 *** Settings ***
-Library                 robotframework_concurrent.process_star   started.robot       WITH NAME      process1
-Library                 robotframework_concurrent.process_star   started2.robot       WITH NAME      process2
+Library                 robotframework_concurrent.process_star   atest/process_swarm/started.robot       WITH NAME      process1
+Library                 robotframework_concurrent.process_star   atest/process_swarm/started2.robot       WITH NAME      process2
 Test Setup              Test setup keyword
 Test Teardown           Test teardown keyword
 *** Test Cases ***

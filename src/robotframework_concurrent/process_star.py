@@ -20,7 +20,6 @@ class process_star():
     def Start_Process(self) -> None:
         q = queue.Queue()
         if self._target_suite is None:
-            logger.error(process_star._address)
             threading.Thread(target=lambda q: q.put(multiprocessing.connection.Client(process_star._address)), args=(q,)).start()
             try:
                 self._fifo = q.get(timeout=2)

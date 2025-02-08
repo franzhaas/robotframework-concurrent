@@ -7,6 +7,22 @@ import itertools
 from typing import Any, Union
 import threading
 import queue
+from robot.libraries.BuiltIn import BuiltIn
+import uuid
+import inspect
+import robot.running.model
+
+def _get_current_keyword_id():
+    """
+    Traverses the stack to find the current keyword and returns its id.
+    """
+    for stack in inspect.stack():
+        frame = inspect.getargvalues(stack[0])
+        try:
+            if isinstance(frame.locals["data"], robot.running.model.Keyword):
+                return frame.locals["data"].id
+        except KeyError:
+            pass
 
 
 class process_star():
@@ -21,13 +37,14 @@ class process_star():
         q = queue.Queue()
         if self._target_suite is None:
             threading.Thread(target=lambda q: q.put(multiprocessing.connection.Client(process_star._address)), args=(q,)).start()
+            self.partner_log_file = process_star._parrent_log
             try:
                 self._fifo = q.get(timeout=2)
             except queue.Empty:
                 raise Exception("Child process did not connect to parent process")
             logger.info("started child process")
         else:
-            self.out_dir = f"{self._target_suite}_{next(self._start_cnt)}_output"
+            self.out_dir = f"{BuiltIn().replace_variables('${OUTPUT_DIR}')}/{self._target_suite}_{next(self._start_cnt)}_output"
             fifo = multiprocessing.connection.Listener()
             Path(f"{self.out_dir}").mkdir(parents=True, exist_ok=True)
             self._stdout = open(f"{self.out_dir}/output.log", "w")
@@ -35,6 +52,8 @@ class process_star():
 import robotframework_concurrent.process_star
 import robot
 robotframework_concurrent.process_star.process_star._address = r"{fifo.address}"
+robotframework_concurrent.process_star.process_star._parrent_log = "{BuiltIn().replace_variables('${LOG FILE}')}"
+
 robot.run("{self._target_suite}", outputdir='{self.out_dir}')
 """], stdout=self._stdout, stderr=subprocess.STDOUT)
             threading.Thread(target=lambda q: q.put(fifo.accept()), args=(q,)).start()
@@ -42,13 +61,18 @@ robot.run("{self._target_suite}", outputdir='{self.out_dir}')
                 self._fifo = q.get(timeout=10)
             except queue.Empty:
                 raise Exception("Child process did not connect to parent process")
-            logger.info(f"Initiated start of process for suite: {self._target_suite} with output dir: {self.out_dir}")
+            self.partner_log_file = f"{self.out_dir}/log.html"
+            logger.info(f"Initiated start of process for suite: {self._target_suite} with output dir: {self.out_dir} log at: <a href='{self.partner_log_file}'>log</a>", html=True)
 
     def send_message(self, message: Any) -> None:
-        self._fifo.send(message)
+        _annotations_id = str(uuid.uuid4()).replace("-", "")
+        logger.info(f"""sending message: '{str(message)}' to <a href="{self.partner_log_file}#{_annotations_id}">log</a>""", html=True)
+        self._fifo.send((f"{BuiltIn().replace_variables('${LOG FILE}')}#{_get_current_keyword_id()}", _annotations_id, message,))
 
     def recv_message(self) -> Any:
-        return self._fifo.recv()
+        link, __annotations__id, msg =  self._fifo.recv()
+        logger.info(f"""<p id="{__annotations__id}">received message: '{str(msg)}' from <a href="{link}">source</a></p>""", html=True)
+        return msg
     
     def Process_Should_Have_Terminated(self, timeout:int =1) -> None:
         assert self._sp is not None, "Process was not started"

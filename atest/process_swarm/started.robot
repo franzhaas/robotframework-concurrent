@@ -4,9 +4,10 @@ Test Setup              Test setup keyword
 Force Tags              swarm
 *** Test Cases ***
 basic
-    send_message        worki worki
-    ${GREET}=           Recv Message
-    Log                 ${GREET} from startee
+    ${msg}=           Recv Message
+    ${msg}=           Evaluate  ${msg} + 1
+    send_message      ${msg}
+    Log               ${msg} from startee
 
 *** Keywords ***
 Test setup keyword

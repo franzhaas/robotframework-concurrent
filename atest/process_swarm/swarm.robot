@@ -4,21 +4,23 @@ Library                 robotframework_concurrent.process_star   atest/process_s
 Test Setup              Test setup keyword
 Test Teardown           Test teardown keyword
 *** Test Cases ***
-basic   
-    process1.Send Message        order order
-    process2.Send Message        reorder reorder
-    ${GREET}=           process1.Recv Message
-    Log                 ${GREET} from star
-    ${GREET}=           process2.Recv Message
-    Log                 ${GREET} from star2
+basic1
+    process1.Send Message        ${1}
+    process2.Send Message        ${2}
+    ${msg}=                      process1.Recv Message
+    Should Be Equal As Integers  ${msg}  ${2}
+    ${msg}=                      process2.Recv Message
+    Should Be Equal As Integers  ${msg}  ${4}
 
 basic2
-    process1.Send Message        order order
-    process2.Send Message        reorder reorder
-    ${GREET}=           process1.Recv Message
-    Log                 ${GREET} from star1
-    ${GREET}=           process2.Recv Message
-    Log                 ${GREET} from star2
+    process1.Send Message        ${1}
+    process2.Send Message        ${2}
+    ${msg}=                      process2.Recv Message
+    Should Be Equal As Integers  ${msg}  ${4}
+    ${msg}=                      process1.Recv Message
+    Should Be Equal As Integers  ${msg}  ${2}
+
+
 *** Keywords ***
 Test setup keyword
     process1.Start_Process

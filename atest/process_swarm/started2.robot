@@ -4,10 +4,10 @@ Test Setup              Test setup keyword
 Force Tags              swarm
 *** Test Cases ***
 basic
-    send_message        sleepi sleepi
-    ${GREET}=           Recv Message
-    Log                 ${GREET} from startee
-
+    ${msg}=           Recv Message
+    ${msg}=           Evaluate  ${msg} + 2
+    send_message      ${msg}
+    Log               ${msg} from startee
 *** Keywords ***
 Test setup keyword
     Start_Process

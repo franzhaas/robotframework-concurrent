@@ -5,6 +5,7 @@ This repo serves several tasks.
  - Show the current state of concurrent robot framework executions.
  - propose changes to robot framework
  - base the workshop at robocon about concurrency
+but mainly as a training aid for a workshop at robocon 2025
 
 ## Why reinvent the wheel?
  - [thread enabled fork](https://github.com/test-fullautomation/robotframework-documentation)

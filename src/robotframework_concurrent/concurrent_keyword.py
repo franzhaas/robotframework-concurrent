@@ -7,6 +7,7 @@ from enum import Enum as Enum
 from concurrent.futures import ThreadPoolExecutor
 import os
 import robot.libraries.BuiltIn as BuiltIn
+from functools import wraps
 
 
 class _concurrentEvent(Enum):
@@ -24,24 +25,16 @@ def make_function_concurrent(fun):
     """
     This decorator is used to make a method concurrent.
     """
-
-    def _wrap(fun):
-        def _wrapped(obj, *args, **kwargs):
-            try:
-                rval = fun(obj, *args, **kwargs)
-                obj._2original_thread_queue.put(_concurrentEvent.END)
-                return rval
-            except Exception as e:
-                obj._2original_thread_queue.put((_concurrentEvent.EXCEPTION, e,))
-                raise e
-        return _wrapped
-
-    fun = _wrap(fun)
-
-    def concurrent_fun(self, *args, **kwargs):
-        self._2original_thread_queue.put(_concurrentEvent.START)
-        return concurrent_keyword_execution_base._threadPool.submit(fun, self, *args, **kwargs)
-    return concurrent_fun
+    @wraps(fun)
+    def _wrapped(obj, *args, **kwargs):
+        try:
+            rval = fun(obj, *args, **kwargs)
+            obj._2original_thread_queue.put(_concurrentEvent.END)
+            return rval
+        except Exception as e:
+            obj._2original_thread_queue.put((_concurrentEvent.EXCEPTION, e,))
+            raise e
+    return _wrapped
 
 class concurrent_keyword_execution_base:
     _threadPool = ThreadPoolExecutor(max_workers=os.cpu_count()*2)

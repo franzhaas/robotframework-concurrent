@@ -3,6 +3,7 @@ Library                 robotframework_concurrent.interpreter_star   atest/inter
 Library                 robotframework_concurrent.interpreter_star   atest/interpreter_swarm/started2.robot      WITH NAME      interpreter2
 Test Setup              Test setup keyword
 Test Teardown           Test teardown keyword
+Test Tags               interpreter_swarm
 *** Test Cases ***
 basic
     interpreter1.Send Message        order order

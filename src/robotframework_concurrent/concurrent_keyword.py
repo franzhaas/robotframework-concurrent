@@ -96,8 +96,8 @@ class concurrent_keyword_execution_base:
                 fun(*args, **kwargs)
             case (_concurrentEvent.CALL, fun, q, args, kwargs):
                 q.put(fun(*args, **kwargs))
-            case _:
-                raise AssertionError(f"Unexpected message from concurrent execution: ")
+            case msg:
+                raise AssertionError(f"Unexpected message from concurrent execution: '{msg}'")
         self._2original_thread_queue.task_done()
     
     def poll_messages_from_tasks(self):

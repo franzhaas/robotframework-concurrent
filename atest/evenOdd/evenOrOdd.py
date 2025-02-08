@@ -1,6 +1,5 @@
 from robot.api import logger
 from robotframework_concurrent import concurrent_keyword
-import time
 
 
 def _is_even(nr: int) -> bool:
@@ -30,5 +29,5 @@ class evenOrOdd(concurrent_keyword.concurrent_keyword_execution_base):
     
     def even(self, nr: int):
         rVal = self.odd(nr-1)
-        self.call_function_from_originating_thread(logger.warn, f"starting even check")
+        self.call_function_from_originating_thread(logger.warn, "starting even check")
         return rVal

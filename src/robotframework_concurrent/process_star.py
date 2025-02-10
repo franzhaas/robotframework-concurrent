@@ -7,6 +7,19 @@ import itertools
 from typing import Any, Union
 import threading
 import queue
+import inspect
+import robot.libraries.BuiltIn as BuiltIn
+import robot.running.model
+
+
+def _get_current_keyword_id():
+    """
+    Traverses the stack to find the current keyword and returns its id.
+    """
+    for stack in inspect.stack():
+        frame = inspect.getargvalues(stack[0])
+        if "data" in frame.locals and isinstance(frame.locals["data"], robot.running.model.Keyword):
+            return frame.locals["data"].id
 
 
 class process_star():
@@ -20,7 +33,6 @@ class process_star():
     def Start_Process(self) -> None:
         q = queue.Queue()
         if self._target_suite is None:
-            logger.error(process_star._address)
             threading.Thread(target=lambda q: q.put(multiprocessing.connection.Client(process_star._address)), args=(q,)).start()
             try:
                 self._fifo = q.get(timeout=2)
@@ -46,23 +58,26 @@ robot.run(fr"{self._target_suite}", outputdir=r'{self.out_dir}')
             logger.info(f"Initiated start of process for suite: {self._target_suite} with output dir: {self.out_dir}")
 
     def send_message(self, message: Any) -> None:
-        self._fifo.send(message)
+        logFilePath = BuiltIn.BuiltIn().get_variable_value("${LOG_FILE}")
+        self._fifo.send((str(Path(f"{logFilePath}"))+f"#{_get_current_keyword_id()}", message,))
 
     def recv_message(self) -> Any:
-        return self._fifo.recv()
+        link, msg = self._fifo.recv()
+        logger.info(f"""Received message from <a href="{link}">log</a>: {msg}""", html=True)
+        return msg
     
     def Process_Should_Have_Terminated(self, timeout:int =1) -> None:
         assert self._sp is not None, "Process was not started"
         try:
             self._sp.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            raise Exception(f"Process {self._target_suite} has not terminated(output: {self._out_dir})")
+            raise Exception(f"Process {self._target_suite} has not terminated(output: {self.out_dir})")
         
     def Process_Should_Be_Running(self) -> None:
         assert self._sp is not None, "Process was not started"
         try:
             self._sp.wait(timeout=0)
-            raise Exception(f"Process {self._target_suite} has terminated prematurely (output: {self._out_dir})")
+            raise Exception(f"Process {self._target_suite} has terminated prematurely (output: {self.out_dir})")
         except subprocess.TimeoutExpired:
             pass
     

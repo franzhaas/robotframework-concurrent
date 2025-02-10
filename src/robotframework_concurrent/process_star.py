@@ -7,21 +7,11 @@ import itertools
 from typing import Any, Union
 import threading
 import queue
-import inspect
 import robot.libraries.BuiltIn as BuiltIn
-import robot.running.model
+from robot.api.deco import keyword, library
 
 
-def _get_current_keyword_id():
-    """
-    Traverses the stack to find the current keyword and returns its id.
-    """
-    for stack in inspect.stack():
-        frame = inspect.getargvalues(stack[0])
-        if "data" in frame.locals and isinstance(frame.locals["data"], robot.running.model.Keyword):
-            return frame.locals["data"].id
-
-
+@library(listener='SELF')
 class process_star():
     _start_cnt = itertools.count()
     _address = None
@@ -29,7 +19,12 @@ class process_star():
     def __init__(self, target_suite: Union[None, Path, str]=None):
         self._target_suite = target_suite        
         self._sp = None
+        self.id = None
 
+    def start_keyword(self, data, result):
+        self.id = result.id
+
+    @keyword
     def Start_Process(self) -> None:
         q = queue.Queue()
         if self._target_suite is None:
@@ -57,15 +52,18 @@ robot.run(fr"{self._target_suite}", outputdir=r'{self.out_dir}')
                 raise Exception("Child process did not connect to parent process")
             logger.info(f"Initiated start of process for suite: {self._target_suite} with output dir: {self.out_dir}")
 
+    @keyword
     def send_message(self, message: Any) -> None:
         logFilePath = BuiltIn.BuiltIn().get_variable_value("${LOG_FILE}")
-        self._fifo.send((str(Path(f"{logFilePath}"))+f"#{_get_current_keyword_id()}", message,))
+        self._fifo.send((f"{logFilePath}#{self.id}", message,))
 
+    @keyword
     def recv_message(self) -> Any:
         link, msg = self._fifo.recv()
         logger.info(f"""Received message from <a href="{link}">log</a>: {msg}""", html=True)
         return msg
     
+    @keyword
     def Process_Should_Have_Terminated(self, timeout:int =1) -> None:
         assert self._sp is not None, "Process was not started"
         try:
@@ -73,6 +71,7 @@ robot.run(fr"{self._target_suite}", outputdir=r'{self.out_dir}')
         except subprocess.TimeoutExpired:
             raise Exception(f"Process {self._target_suite} has not terminated(output: {self.out_dir})")
         
+    @keyword
     def Process_Should_Be_Running(self) -> None:
         assert self._sp is not None, "Process was not started"
         try:
@@ -86,6 +85,6 @@ robot.run(fr"{self._target_suite}", outputdir=r'{self.out_dir}')
             try:
                 self._sp.wait(timeout=1)
             except subprocess.TimeoutExpired:
-                logger.error(f"Process star was not terminated properly (suite: {self._target_suite}, output: {self._out_dir}), killing it.")
+                logger.error(f"Process star was not terminated properly (suite: {self._target_suite}, output: {self.out_dir}), killing it.")
                 self._sp.kill()
                 self._sp.wait(timeout=2)

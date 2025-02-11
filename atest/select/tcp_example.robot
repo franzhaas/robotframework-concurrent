@@ -1,6 +1,6 @@
 *** Settings ***
 Library           tcp_example.py
-*** Tasks ***
+*** Test Cases ***
 select based parallelism
     ${ROBOTFRAMEWORK}=       connect_http_bare   www.robotframework.org    80
     ${ROBOCON}=              connect_http_bare   www.robocon.io    80

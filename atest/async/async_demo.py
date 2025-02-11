@@ -9,7 +9,7 @@ import threading
 class async_demo():
     def __init__(self):
         super().__init__()
-        BuiltIn.BuiltIn().run_keyword("Log", f"loading  {threading.current_thread().ident}", "INFO")
+        BuiltIn.BuiltIn().run_keyword("Log", f"loading  {threading.current_thread().ident} this call is for __init__ of hte async_demo", "INFO")
     
     async def _task_async(self):
         await asyncio.sleep(1)

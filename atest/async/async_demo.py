@@ -9,7 +9,8 @@ import threading
 class async_demo():
     def __init__(self):
         super().__init__()
-        BuiltIn.BuiltIn().run_keyword("Log", f"loading  {threading.current_thread().ident} this call is for __init__ of hte async_demo", "INFO")
+        BuiltIn.BuiltIn().run_keyword("Log", f"loading  {threading.current_thread().ident} this call is for __init__ of the async_demo", "INFO")
+        self._task = []
     
     async def _task_async(self):
         await asyncio.sleep(1)
@@ -21,8 +22,7 @@ class async_demo():
 
     @keyword
     async def  start_async_wait(self):
-        await asyncio.sleep(1)
-        self._task = asyncio.create_task(self._task_async())
+        self._task.append(asyncio.create_task(self._task_async()))
 
     @keyword
     async def  start_async_wait_with_return(self):
@@ -31,4 +31,5 @@ class async_demo():
 
     @keyword
     async def wait_for_events(self):
-        await self._task
+        while self._task:
+            await self._task.pop()
